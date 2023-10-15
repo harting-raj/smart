@@ -10,16 +10,20 @@ export default {
         if (firstName && lastName && contactNumber && password && role && email) {
 
             try {
-
-                const hashedPassword = await bcrypt.hash(password, 10);
-                const newUser = await Users.create({
-
-                    firstName, lastName, contactNumber, password: hashedPassword, role, email
-                });
-                const accessToken = jwt.sign({ userID: newUser.id }, process.env.ACCESS_TOKEN_KEY, { expiresIn: '5d' });
-                const refreshToken = jwt.sign({ userID: newUser.id }, process.env.REFRESH_TOKEN_KEY, { expiresIn: '30d' });
-
-                res.status(201).json({ error: false, message: 'User register successfully', accessToken, refreshToken });
+                const user= Users.findOne({email:email});
+               if (!user) {
+                 const hashedPassword = await bcrypt.hash(password, 10);
+                 const newUser = await Users.create({
+ 
+                     firstName, lastName, contactNumber, password: hashedPassword, role, email
+                 });
+                 const accessToken = jwt.sign({ userID: newUser.id }, process.env.ACCESS_TOKEN_KEY, { expiresIn: '5d' });
+                 const refreshToken = jwt.sign({ userID: newUser.id }, process.env.REFRESH_TOKEN_KEY, { expiresIn: '30d' });
+ 
+                 res.status(201).json({ error: false, message: 'User register successfully', accessToken, refreshToken });
+               } else {
+                res.status(409).json({ error: true, message: "Email already registered" });
+               }
             } catch (error) {
                 res.status(500).json({ error: true, message: error.message });
             }
